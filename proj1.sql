@@ -113,13 +113,30 @@ AS
 -- Question 4i
 CREATE VIEW q4i(yearid, min, max, avg, stddev)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT yearid, MIN(salary) AS min, MAX(salary) AS max, AVG(salary) AS avg, STDDEV(salary) AS stddev
+  FROM salaries
+  GROUP BY yearid
+  ORDER BY yearid
 ;
 
 -- Question 4ii
 CREATE VIEW q4ii(binid, low, high, count)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  WITH stat AS (
+    SELECT MIN(salary) AS min, MAX(salary) AS max
+    FROM salaries
+    WHERE yearid = 2016
+  ),
+  bucket AS (
+    SELECT width_bucket(salaries.salary, stat.min, stat.max+1, 10)-1 AS binid, AVG(stat.min) as min, AVG(stat.max) as max, COUNT(salary) as count
+    FROM salaries, stat
+    WHERE salaries.yearid = 2016
+    GROUP BY binid
+    ORDER BY binid
+  )
+
+  SELECT binid, min + binid*(max-min)/10, min + (binid+1)*(max-min)/10, count
+  FROM bucket
 ;
 
 -- Question 4iii
